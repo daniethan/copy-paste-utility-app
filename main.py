@@ -30,7 +30,8 @@ def save_explanation(qtn: dict = {}) -> dict:
 
 def save_document():
     global df
-    utils.save_changes(df)
+    utils.save_changes(df, set_file.value)
+    print("Success")
 
 
 def set_explanation():
@@ -72,14 +73,9 @@ def get_next_question():
 
 def set_questions():
     global QUESTIONS, num_qtns, qtns_left, df
-    df = utils.extract_df(utils.FILES.get(set_file.value))
-    QUESTIONS = utils.fetch_incomplete_MCQ(df)
-    num_qtns = sum(
-        1
-        for _ in utils.fetch_incomplete_MCQ(
-            utils.extract_df(utils.FILES.get(set_file.value))
-        )
-    )
+    df, target_qtnz = utils.extract_df(utils.FILES.get(set_file.value))
+    QUESTIONS = utils.fetch_incomplete_MCQ(target_qtnz)
+    num_qtns = sum(1 for _ in utils.fetch_incomplete_MCQ(target_qtnz))
     qtns_left = num_qtns + 1
     set_prompt()
     toggle_nxt_qtn_btn_state()
