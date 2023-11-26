@@ -1,10 +1,10 @@
 from typing import Any, Generator
 import flet as ft
-import pyperclip, sample_questions
-from utils import pretty_print_dict
+import pyperclip
+import utils
 
 
-FILES = sample_questions.FILES
+FILES = utils.FILES
 QUESTIONS: Generator[dict[str, Any], Any, None] | None = None
 num_qtns: int = 0
 qtns_left: int = 0
@@ -53,21 +53,17 @@ def get_next_question():
         if isinstance(next_q, dict):
             index = next_q.pop("i", None)
 
-            next_q = pretty_print_dict(next_q) + PROMPT_POSTFIX
+            next_q = utils.pretty_print_dict(next_q) + PROMPT_POSTFIX
 
     return next_q
 
 
 def set_questions():
     global QUESTIONS, num_qtns, qtns_left
-    QUESTIONS = sample_questions.fetch_incomplete_MCQ(
-        sample_questions.extract_df(FILES.get(set_file.value))
-    )
+    QUESTIONS = utils.fetch_incomplete_MCQ(utils.extract_df(FILES.get(set_file.value)))
     num_qtns = sum(
         1
-        for _ in sample_questions.fetch_incomplete_MCQ(
-            sample_questions.extract_df(FILES.get(set_file.value))
-        )
+        for _ in utils.fetch_incomplete_MCQ(utils.extract_df(FILES.get(set_file.value)))
     )
     qtns_left = num_qtns + 1
     set_prompt()
