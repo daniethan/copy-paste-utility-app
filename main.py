@@ -1,26 +1,36 @@
 from typing import Any, Generator
 import flet as ft
+from pandas import DataFrame
 import pyperclip
 import utils
 
 
-FILES = utils.FILES
-QUESTIONS: Generator[dict[str, Any], Any, None] | None = None
-num_qtns: int = 0
-qtns_left: int = 0
 PROMPT_POSTFIX = (
     "\nProvide a simple, comprehensive, but concise rationale for the correct answer."
 )
+QUESTIONS: Generator[dict[str, Any], Any, None] | None = None
+num_qtns: int = 0
+qtns_left: int = 0
+current_question: dict = {}
+df: DataFrame | None = None
+feedback: str = ""
 
 
-def save_explanation(exp: str, qtn: dict = {}) -> dict:
-    qtn.update({"Explanation": exp})
-    # do other stuff with the updated question
-    # print(f"Explanation added successfully\n{qtn}")
+def save_explanation(qtn: dict = {}) -> dict:
+    global df, feedback
+
+    if (index := qtn.get("i", None)) is not None:
+        utils.set_explanation_detail(df, int(index), rationale_text.value)
+        feedback = "Explanation Added!"
+    else:
+        feedback = "FAILED!"
+
+    print(feedback)
 
 
 def save_document():
-    print("Save document with explanations")
+    global df
+    utils.save_changes(df)
 
 
 def set_explanation():
@@ -47,10 +57,12 @@ def toggle_nxt_qtn_btn_state():
 
 
 def get_next_question():
+    global current_question
     next_q = None
     if QUESTIONS:
         next_q = next(QUESTIONS, None)
         if isinstance(next_q, dict):
+            current_question = next_q.copy()
             index = next_q.pop("i", None)
 
             next_q = utils.pretty_print_dict(next_q) + PROMPT_POSTFIX
@@ -59,11 +71,14 @@ def get_next_question():
 
 
 def set_questions():
-    global QUESTIONS, num_qtns, qtns_left
-    QUESTIONS = utils.fetch_incomplete_MCQ(utils.extract_df(FILES.get(set_file.value)))
+    global QUESTIONS, num_qtns, qtns_left, df
+    df = utils.extract_df(utils.FILES.get(set_file.value))
+    QUESTIONS = utils.fetch_incomplete_MCQ(df)
     num_qtns = sum(
         1
-        for _ in utils.fetch_incomplete_MCQ(utils.extract_df(FILES.get(set_file.value)))
+        for _ in utils.fetch_incomplete_MCQ(
+            utils.extract_df(utils.FILES.get(set_file.value))
+        )
     )
     qtns_left = num_qtns + 1
     set_prompt()
@@ -103,7 +118,7 @@ explanation_btn = ft.OutlinedButton(
         shape=ft.RoundedRectangleBorder(radius=10),
     ),
     disabled=True,
-    on_click=lambda e: save_explanation(rationale_text.value),
+    on_click=lambda e: save_explanation(current_question),
 )
 
 input_text = ft.TextField(
@@ -169,7 +184,7 @@ rationale_field = ft.Stack(
 set_file = ft.Dropdown(
     label="Choose File To Use",
     width=280,
-    options=[ft.dropdown.Option(filename) for filename in FILES],
+    options=[ft.dropdown.Option(filename) for filename in utils.FILES],
     on_change=lambda e: set_questions(),
 )
 

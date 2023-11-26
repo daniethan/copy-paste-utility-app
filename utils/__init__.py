@@ -55,10 +55,13 @@ def fetch_incomplete_MCQ(df: pd.DataFrame) -> Generator[dict[str, Any], Any, Non
 
 
 def set_explanation_detail(
-    df: pd.DataFrame, index: pd.Index, explanation: str
-) -> pd.DataFrame:
+    df: pd.DataFrame,
+    index: int,
+    explanation: str,
+) -> None:
+    df["Explanation"] = df["Explanation"].astype(str)
     df.at[index, "Explanation"] = explanation
-    return df
+    # return df
 
 
 def save_changes(df: pd.DataFrame) -> None:
