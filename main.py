@@ -1,11 +1,16 @@
+from typing import Any, Generator
 import flet as ft
 import pyperclip, sample_questions
+from utils import pretty_print_dict
 
 
-FILES = ("home.txt", "boys.txt", "axe.xlsx", "names.xlsx")
-QUESTIONS = (qtn for qtn in sample_questions.QUESTIONS)
-num_qtns = sum(1 for _ in sample_questions.QUESTIONS)
-qtns_left = num_qtns
+FILES = sample_questions.FILES
+QUESTIONS: Generator[dict[str, Any], Any, None] | None = None
+num_qtns: int = 0
+qtns_left: int = 0
+PROMPT_POSTFIX = (
+    "\nProvide a simple, comprehensive, but concise rationale for the correct answer."
+)
 
 
 def save_explanation(exp: str, qtn: dict = {}) -> dict:
@@ -32,17 +37,45 @@ def toggle_exp_btn_state():
     explanation_btn.update()
 
 
+def toggle_nxt_qtn_btn_state():
+    if input_text.value:
+        nxt_qtn_btn.disabled = False
+    else:
+        nxt_qtn_btn.disabled = True
+
+    nxt_qtn_btn.update()
+
+
 def get_next_question():
-    return next(QUESTIONS, "NO MORE QUESTIONS")
+    next_q = None
+    if QUESTIONS:
+        next_q = next(QUESTIONS, None)
+        if isinstance(next_q, dict):
+            index = next_q.pop("i", None)
+
+            next_q = pretty_print_dict(next_q) + PROMPT_POSTFIX
+
+    return next_q
 
 
 def set_questions():
-    print(f"Set QUESTIONS from {set_file.value}")
-    # to be accomplished by script
+    global QUESTIONS, num_qtns, qtns_left
+    QUESTIONS = sample_questions.fetch_incomplete_MCQ(
+        sample_questions.extract_df(FILES.get(set_file.value))
+    )
+    num_qtns = sum(
+        1
+        for _ in sample_questions.fetch_incomplete_MCQ(
+            sample_questions.extract_df(FILES.get(set_file.value))
+        )
+    )
+    qtns_left = num_qtns + 1
+    set_prompt()
+    toggle_nxt_qtn_btn_state()
 
 
 def set_prompt():
-    global qtns_left
+    global qtns_left, num_qtns
     rationale_text.value = ""
     rationale_text.update()
     toggle_exp_btn_state()
@@ -54,7 +87,7 @@ def set_prompt():
     counter.text = f"{qtns_left}/{num_qtns}"
     counter.update()
 
-    if not qtns_left:
+    if qtns_left == 0 or num_qtns == 0:
         nxt_qtn_btn.disabled = True
         nxt_qtn_btn.update()
 
@@ -64,6 +97,7 @@ nxt_qtn_btn = ft.OutlinedButton(
     style=ft.ButtonStyle(
         shape=ft.RoundedRectangleBorder(radius=10),
     ),
+    disabled=True,
     on_click=lambda e: set_prompt(),
 )
 
@@ -137,10 +171,9 @@ rationale_field = ft.Stack(
 )
 
 set_file = ft.Dropdown(
-    label="Choose file to use",
+    label="Choose File To Use",
     width=280,
-    options=[ft.dropdown.Option(file) for file in FILES],
-    value=FILES[0] if FILES else "---No Files Specified---",
+    options=[ft.dropdown.Option(filename) for filename in FILES],
     on_change=lambda e: set_questions(),
 )
 
