@@ -4,11 +4,25 @@ import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Alignment, Font, PatternFill
 import pandas as pd
+import shutil
 
 
 INPUT_DIR = r"input-files"
 OUTPUT_DIR = r"output-files"
 DEFAULT_COLUMN_WIDTH = 15
+
+
+def update_input(src_dir, dest_dir, filename):
+    source_file = os.path.join(src_dir, filename)
+    destination_file = os.path.join(dest_dir, filename)
+
+    # Check if the destination file exists
+    if os.path.exists(destination_file):
+        # Remove the existing file to replace it with the new one
+        os.remove(destination_file)
+
+    # Copy the file from source to destination
+    shutil.copy2(source_file, dest_dir)
 
 
 def get_input_files(in_dir: str) -> Generator[str, None, None]:
@@ -125,6 +139,10 @@ def save_changes(df: pd.DataFrame, filename: str) -> None:
 
         # Save the Excel file
         workbook.save(f"{OUTPUT_DIR}\\{filename}")
+
+        # Replace input with latest version.
+        update_input(OUTPUT_DIR, INPUT_DIR, filename)
+
     except KeyError as e:
         raise e
 

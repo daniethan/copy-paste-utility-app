@@ -23,13 +23,13 @@ def save_explanation(qtn: dict = {}) -> dict:
     else:
         feedback = "FAILED!"
 
-    print(feedback)
+    # print(feedback)
 
 
 def save_document():
     global df
     utils.save_changes(df, set_file.value)
-    print("Success")
+    # print("Success")
 
 
 def set_explanation():
@@ -44,6 +44,14 @@ def toggle_exp_btn_state():
     else:
         explanation_btn.disabled = True
     explanation_btn.update()
+
+
+def toggle_update_doc_btn_state():
+    if set_file.value:
+        update_doc_btn.disabled = False
+    else:
+        update_doc_btn.disabled = True
+    update_doc_btn.update()
 
 
 def toggle_nxt_qtn_btn_state():
@@ -77,6 +85,7 @@ def set_questions():
     qtns_left = num_qtns + 1
     set_prompt()
     toggle_nxt_qtn_btn_state()
+    toggle_update_doc_btn_state()
 
 
 def set_prompt():
@@ -113,6 +122,12 @@ explanation_btn = ft.OutlinedButton(
     ),
     disabled=True,
     # on_click=lambda e: save_explanation(current_question),
+)
+
+update_doc_btn = ft.FilledButton(
+    "Update Document",
+    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10)),
+    disabled=True,
 )
 
 input_text = ft.TextField(
@@ -190,7 +205,9 @@ def main(page: ft.Page):
     page.window_height = 900
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+
     explanation_btn.on_click = lambda e: save_action("Explanation Added")
+    update_doc_btn.on_click = lambda e: save_action("File Updated")
 
     page.add(
         ft.AppBar(title=ft.Text(value="Utility App", style="bold")),
@@ -233,15 +250,7 @@ def main(page: ft.Page):
             padding=5,
         ),
         ft.Divider(height=15, thickness=3),
-        ft.Container(
-            content=ft.FilledButton(
-                "Update Document",
-                style=ft.ButtonStyle(
-                    shape=ft.RoundedRectangleBorder(radius=10),
-                ),
-                on_click=lambda e: save_action("File Updated"),
-            )
-        ),
+        ft.Container(content=update_doc_btn),
     )
 
     page.update()
@@ -249,6 +258,7 @@ def main(page: ft.Page):
     def save_action(msg: str):
         if msg.startswith("File"):
             save_document()
+            set_questions()
         else:
             save_explanation(current_question)
 
