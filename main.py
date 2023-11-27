@@ -5,9 +5,7 @@ import pyperclip
 import utils
 
 
-PROMPT_POSTFIX = (
-    "\nProvide a simple, comprehensive, but concise rationale for the correct answer."
-)
+PROMPT_POSTFIX = "\nProvide a simple, precise, comprehensive, and concise rationale for the correct answer."
 QUESTIONS: Generator[dict[str, Any], Any, None] | None = None
 num_qtns: int = 0
 qtns_left: int = 0
