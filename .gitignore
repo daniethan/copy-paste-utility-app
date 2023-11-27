@@ -7,8 +7,8 @@ __pycache__/
 *.so
 
 #test files and folders
-/input-files
-*.xlsx
+input-files/
+*.xlsx*
 
 # Distribution / packaging
 .Python

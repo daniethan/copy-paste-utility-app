@@ -1,6 +1,6 @@
+from pandas import DataFrame
 from typing import Any, Generator
 import flet as ft
-from pandas import DataFrame
 import pyperclip
 import utils
 
@@ -114,7 +114,7 @@ explanation_btn = ft.OutlinedButton(
         shape=ft.RoundedRectangleBorder(radius=10),
     ),
     disabled=True,
-    on_click=lambda e: save_explanation(current_question),
+    # on_click=lambda e: save_explanation(current_question),
 )
 
 input_text = ft.TextField(
@@ -192,6 +192,7 @@ def main(page: ft.Page):
     page.window_height = 900
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    explanation_btn.on_click = lambda e: save_action("Explanation Added")
 
     page.add(
         ft.AppBar(title=ft.Text(value="Utility App", style="bold")),
@@ -240,11 +241,33 @@ def main(page: ft.Page):
                 style=ft.ButtonStyle(
                     shape=ft.RoundedRectangleBorder(radius=10),
                 ),
-                on_click=lambda e: save_document(),
+                on_click=lambda e: save_action("File Updated"),
             )
         ),
     )
+
     page.update()
+
+    def save_action(msg: str):
+        if msg.startswith("File"):
+            save_document()
+        else:
+            save_explanation(current_question)
+
+        page.show_snack_bar(
+            ft.SnackBar(
+                ft.Text(
+                    f"{msg} Successfully!",
+                    weight="bold",
+                    size=20,
+                    text_align="center",
+                    color="#02fea6",
+                ),
+                open=True,
+                duration=1500,
+                bgcolor="#484848",
+            )
+        )
 
 
 ft.app(target=main)
