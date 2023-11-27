@@ -6,7 +6,8 @@ from openpyxl.styles import Alignment, Font, PatternFill
 import pandas as pd
 
 
-INPUT_DIR = r"D:\projects\flet_apps\helper-ui\input-files"
+INPUT_DIR = r"input-files"
+OUTPUT_DIR = r"output-files"
 DEFAULT_COLUMN_WIDTH = 15
 
 
@@ -115,7 +116,7 @@ def setup_workbook(worksheet: Worksheet, df: pd.DataFrame) -> None:
 def save_changes(df: pd.DataFrame, filename: str) -> None:
     try:
         # Export the DataFrame to Excel with text wrapping for 'Column1' using openpyxl engine
-        with pd.ExcelWriter(FILES[filename], engine="openpyxl") as writer:
+        with pd.ExcelWriter(f"{OUTPUT_DIR}\\{filename}", engine="openpyxl") as writer:
             df.to_excel(writer, index=False)
 
             # Access the openpyxl workbook and worksheet objects
@@ -123,7 +124,7 @@ def save_changes(df: pd.DataFrame, filename: str) -> None:
             setup_workbook(workbook.active, df)
 
         # Save the Excel file
-        workbook.save(f"D:\\projects\\flet_apps\helper-ui\\output-files\\{filename}")
+        workbook.save(f"{OUTPUT_DIR}\\{filename}")
     except KeyError as e:
         raise e
 
