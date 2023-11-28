@@ -79,13 +79,17 @@ def get_next_question():
 
 def set_questions():
     global QUESTIONS, num_qtns, qtns_left, df
-    df, target_qtnz = utils.extract_df(utils.FILES.get(set_file.value))
-    QUESTIONS = utils.fetch_incomplete_MCQ(target_qtnz)
-    num_qtns = sum(1 for _ in utils.fetch_incomplete_MCQ(target_qtnz))
-    qtns_left = num_qtns + 1
-    set_prompt()
-    toggle_nxt_qtn_btn_state()
-    toggle_update_doc_btn_state()
+    try:
+        df, target_qtnz = utils.extract_df(utils.FILES.get(set_file.value))
+        QUESTIONS = utils.fetch_incomplete_MCQ(target_qtnz)
+        num_qtns = sum(1 for _ in utils.fetch_incomplete_MCQ(target_qtnz))
+        qtns_left = num_qtns + 1
+    except ValueError:
+        ...
+    finally:
+        set_prompt()
+        toggle_nxt_qtn_btn_state()
+        toggle_update_doc_btn_state()
 
 
 def set_prompt():
@@ -121,7 +125,6 @@ explanation_btn = ft.OutlinedButton(
         shape=ft.RoundedRectangleBorder(radius=10),
     ),
     disabled=True,
-    # on_click=lambda e: save_explanation(current_question),
 )
 
 update_doc_btn = ft.FilledButton(
@@ -203,6 +206,7 @@ counter = ft.TextButton(text=f"{qtns_left}/{num_qtns}", disabled=True)
 def main(page: ft.Page):
     page.window_width = 600
     page.window_height = 900
+    page.window_opacity = 0.98
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
@@ -210,7 +214,22 @@ def main(page: ft.Page):
     update_doc_btn.on_click = lambda e: save_action("File Updated")
 
     page.add(
-        ft.AppBar(title=ft.Text(value="Utility App", style="bold")),
+        ft.AppBar(
+            title=ft.Text(value="Utility App", style="bold"),
+            actions=[
+                ft.Container(
+                    content=ft.Icon(
+                        ft.icons.REFRESH_OUTLINED,
+                        size=35,
+                        color=ft.colors.AMBER_ACCENT_100,
+                    ),
+                    margin=10,
+                    padding=5,
+                    visible=False
+                    # on_click=lambda e: page.update(),
+                )
+            ],
+        ),
         ft.Divider(opacity=0.5),
         set_file,
         ft.Divider(opacity=0.5),

@@ -41,7 +41,7 @@ def extract_df(excel_file: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = pd.read_excel(excel_file)
 
     # Replace empty strings with None
-    df.replace("", None, inplace=True)
+    df.replace(["", " "], None, inplace=True)
 
     # Identify rows with missing explanations
     missing_explanations = df[df["Explanation"].isnull()]
