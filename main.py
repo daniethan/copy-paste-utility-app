@@ -204,6 +204,7 @@ counter = ft.TextButton(text=f"{qtns_left}/{num_qtns}", disabled=True)
 
 
 def main(page: ft.Page):
+    page.scroll = "hidden"
     page.window_width = 600
     page.window_height = 900
     page.window_opacity = 0.98
